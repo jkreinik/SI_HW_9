@@ -38,10 +38,6 @@ except:
 
 movies = []
 
-movie1 = input("Insert the movie that you want to search for and hit enter ")
-movie2 = input("Insert the movie that you want to search for and hit enter ")
-movie3 = input("Insert the movie that you want to search for and hit enter ")
-movie_search_terms = [movie1, movie2, movie3] #list of the movies that the user imputed 
 
 def omdb_api_call_and_cache(movie):
 	omdb_baseurl = 'http://www.omdbapi.com/?'
@@ -59,9 +55,9 @@ def omdb_api_call_and_cache(movie):
 
 	return(json.loads(omdb_text))
 
-movie_1 = omdb_api_call_and_cache(movie_search_terms[0]) #invocation of omdb api and caching data
-movie_2 = omdb_api_call_and_cache(movie_search_terms[1])
-movie_3 = omdb_api_call_and_cache(movie_search_terms[2]) 
+movie_1 = omdb_api_call_and_cache('step brothers') #invocation of omdb api and caching data
+movie_2 = omdb_api_call_and_cache('titanic')
+movie_3 = omdb_api_call_and_cache('pineapple express') 
 
 movie_dics = [movie_1, movie_2, movie_3] #list of movie dictionaries based of user search terms	
 
@@ -134,7 +130,7 @@ all_movie_data_tup = get_movie_data(movie_obj_lst) #This list of tuples contains
 pprint (all_movie_data_tup)
 
 
-#-------------------------------SQL---------------------------------------------------
+#---------------------------------------------SQL---------------------------------------------------
 
 
 conn = sqlite3.connect('data_access.db')
@@ -153,6 +149,35 @@ statement = 'INSERT INTO Movies VALUES (?, ?, ?, ?, ?, ?)'
 for a in all_movie_data_tup: 
 	cur.execute(statement, a)
 conn.commit()	
+
+
+class OMDB_tests(unittest.TestCase): 
+	def test_1(self):
+		x = omdb_api_call_and_cache('step brothers')
+		self.assertEqual(type(x),type({}))
+	def test_2(self): 
+		x = Movie(movie_1) #step brothers
+		self.assertEqual(type(x.imdb_rating), float) 
+	def test_3(self): 
+		x = Movie(movie_1) #step brothers
+		self.assertEqual(x.get_lead_actor(),'Will Ferrell') 	
+	def test_4(self):
+		x = get_movie_data(movie_obj_lst) #invoking the function with a list of the three movie objects 
+		self.assertEqual(type(x), type([]))
+		self.assertEqual(type(x[0]), tuple)
+
+class SQL_tests(unittest.TestCase): 	
+	def test_1(self): 
+		conn = sqlite3.connect('data_access.db')
+		cur = conn.cursor()
+		cur.execute('SELECT * FROM Movies')
+		result = cur.fetchall()
+		self.assertTrue(len(result[0]), 6)
+		conn.close()
+
+
+
+unittest.main(verbosity=2)	
 
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
