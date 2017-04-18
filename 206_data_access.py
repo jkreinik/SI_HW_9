@@ -23,6 +23,9 @@ import twitter_info
 import sqlite3
 from pprint import pprint 
 # Begin filling in instructions....
+
+#-------------------------------OMDB Data----------------------------------------------
+
 OMDB_FNAME = "OMDB_cache.json"
 
 try: 
@@ -111,27 +114,45 @@ for movie in movie_dics:
 	movie_obj_lst.append(movie_object) 
 	
 
-def get_movie_data(movie_lst):
+def get_movie_data(movie_lst): #this method gets a list of tuples of the 3 different movies searched for
 	movie_data_tup_lst = []
 	for movie in movie_obj_lst:  
 		movie_id = movie.get_imdb_id()
 		movie_director = movie.director
 		movie_title = movie.get_title()
 		movie_imdb_rating = movie.imdb_rating 
-		movie_actor_lst = movie.get_all_actors()
 		movie_lead_actor = movie.get_lead_actor()
 		movie_num_lang = movie.get_num_lang()
 
-		movie_tup = (movie_id, movie_director, movie_title, movie_imdb_rating, movie_actor_lst, movie_lead_actor, movie_num_lang)
+		movie_tup = (movie_id, movie_director, movie_title, movie_imdb_rating, movie_lead_actor, movie_num_lang)
 		movie_data_tup_lst.append(movie_tup)
 
 	return movie_data_tup_lst 
 
-all_movie_data_tup = get_movie_data(movie_obj_lst)
+all_movie_data_tup = get_movie_data(movie_obj_lst) #This list of tuples contains various different attributes about the 3 movies searched for
 
 pprint (all_movie_data_tup)
 
 
+#-------------------------------SQL---------------------------------------------------
+
+
+conn = sqlite3.connect('data_access.db')
+cur = conn.cursor()
+
+cur.execute('DROP TABLE IF EXISTS Movies') 
+
+table_spec = 'CREATE TABLE IF NOT EXISTS '
+table_spec += 'Movies (movie_id TEXT PRIMARY KEY, '
+table_spec += 'director TEXT, title TEXT, imdb_rating INTEGER, lead_actor TEXT, num_languages INTEGER)'
+cur.execute(table_spec)
+
+
+statement = 'INSERT INTO Movies VALUES (?, ?, ?, ?, ?, ?)'
+
+for a in all_movie_data_tup: 
+	cur.execute(statement, a)
+conn.commit()	
 
 
 # Put your tests here, with any edits you now need from when you turned them in with your project plan.
